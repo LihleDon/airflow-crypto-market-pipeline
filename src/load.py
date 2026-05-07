@@ -48,4 +48,4 @@ def load_to_duckdb(records: list[dict]):
 if __name__ == "__main__":
     from extract import extract_crypto_prices
     records = extract_crypto_prices()
-    load_to_duckdb(records)
+    load_to_duckdb(records) 
