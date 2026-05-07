@@ -50,4 +50,4 @@ def extract_crypto_prices():
 if __name__ == "__main__":
     records = extract_crypto_prices()
     for r in records:
-        print(r)
+        print(r) 
