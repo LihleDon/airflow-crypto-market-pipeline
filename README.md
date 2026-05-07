@@ -34,7 +34,6 @@ load never starts.
     DuckDB: crypto_prices table
 
 ## Project structure
-## Project structure
 
     airflow-crypto-market-pipeline/
         dags/
