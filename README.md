@@ -19,33 +19,35 @@ Data passes between tasks using Airflow XCom. If extract fails,
 load never starts.
 
 ## Architecture
-CoinGecko API
-|
-v
-extract.py
-|
-+-- data/raw/prices_YYYYMMDD.json  (audit copy)
-|
-v  XCom
-load.py
-|
-v
-DuckDB (crypto_prices table)
+
+    CoinGecko API
+          |
+          v
+      extract.py
+          |
+          |-- data/raw/prices_YYYYMMDD.json
+          |
+          v
+       load.py
+          |
+          v
+    DuckDB: crypto_prices table
 
 ## Project structure
-airflow-crypto-market-pipeline/
-├── dags/
-│   └── crypto_pipeline_dag.py
-├── src/
-│   ├── extract.py
-│   └── load.py
-├── data/
-│   ├── raw/                     (gitignored)
-│   └── processed/               (gitignored)
-├── airflow_home/                (gitignored)
-├── requirements.txt
-└── README.md
+## Project structure
 
+    airflow-crypto-market-pipeline/
+        dags/
+            crypto_pipeline_dag.py
+        src/
+            extract.py
+            load.py
+        data/
+            raw/           (gitignored)
+            processed/     (gitignored)
+        airflow_home/      (gitignored)
+        requirements.txt
+        README.md
 ## Tech stack
 
 - Apache Airflow 3 for scheduling and orchestration
