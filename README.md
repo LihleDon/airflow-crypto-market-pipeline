@@ -1,57 +1,62 @@
 # Airflow Crypto Market Pipeline
 
-A scheduled data pipeline that pulls live cryptocurrency prices daily
-and builds a queryable price history — no paid APIs, no cloud required.
+A scheduled pipeline that pulls live crypto prices daily and builds
+a queryable price history. No paid APIs, no cloud, no moving parts
+beyond a local Airflow instance and a DuckDB file.
 
-Bitcoin, Ethereum, and Solana prices land in a local DuckDB warehouse
-every 24 hours, orchestrated entirely by Apache Airflow.
+Bitcoin, Ethereum, and Solana prices are captured every 24 hours
+and appended to a local warehouse. After 30 days you have 90 rows
+of real market data ready to query or feed downstream.
 
-## What it does
+## How it works
 
 Airflow triggers the pipeline on a daily schedule. The extract task
-calls the CoinGecko free API and captures current price, market cap,
-and 24-hour change for three coins. The load task writes those records
+hits the CoinGecko free API and grabs current price, market cap, and
+24-hour change for three coins. The load task writes those records
 into DuckDB, appending to the history table on every run.
 
-After 30 days of daily runs, you have 90 rows of real price data —
-ready to query, analyse, or feed into a downstream model.
-
-## Tech stack
-
-- **Apache Airflow 3** — DAG scheduling and task orchestration
-- **CoinGecko API** — free, no API key required
-- **DuckDB** — local analytical warehouse
-- **Python** — extract and load scripts
+Data passes between tasks using Airflow XCom. If extract fails,
+load never starts.
 
 ## Architecture
 CoinGecko API
-│
-▼
-extract.py  ──►  data/raw/prices_YYYYMMDD.json
-│
-▼  (XCom)
+|
+v
+extract.py
+|
++-- data/raw/prices_YYYYMMDD.json  (audit copy)
+|
+v  XCom
 load.py
-│
-▼
+|
+v
 DuckDB (crypto_prices table)
 
 ## Project structure
 airflow-crypto-market-pipeline/
 ├── dags/
-│   └── crypto_pipeline_dag.py   # Airflow DAG definition
+│   └── crypto_pipeline_dag.py
 ├── src/
-│   ├── extract.py               # CoinGecko API call
-│   └── load.py                  # DuckDB write
+│   ├── extract.py
+│   └── load.py
 ├── data/
-│   ├── raw/                     # Raw API responses (gitignored)
-│   └── processed/               # DuckDB file (gitignored)
-├── airflow_home/                # Airflow config (gitignored)
+│   ├── raw/                     (gitignored)
+│   └── processed/               (gitignored)
+├── airflow_home/                (gitignored)
 ├── requirements.txt
 └── README.md
 
+## Tech stack
+
+- Apache Airflow 3 for scheduling and orchestration
+- CoinGecko API, free tier, no key required
+- DuckDB as the local analytical warehouse
+- Python for extract and load logic
+
 ## Setup
 
-**Clone and create virtual environment:**
+Clone the repo and create a virtual environment:
+
 ```bash
 git clone https://github.com/LihleDon/airflow-crypto-market-pipeline.git
 cd airflow-crypto-market-pipeline
@@ -60,22 +65,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Initialise Airflow:**
+Initialise Airflow:
+
 ```bash
 export AIRFLOW_HOME="$(pwd)/airflow_home"
 airflow db migrate
 airflow standalone
 ```
 
-**Point Airflow at the DAGs folder:**
-
-Open `airflow_home/airflow.cfg` and set:
+Point Airflow at the DAGs folder by opening `airflow_home/airflow.cfg`
+and setting:
 dags_folder = /full/path/to/airflow-crypto-market-pipeline/dags
 
-**Open the UI and trigger the DAG:**
-
-Go to `http://localhost:8080`, log in, find `crypto_market_pipeline`,
-and click the trigger button. Both tasks should go green within 30 seconds.
+Open `http://localhost:8080`, log in, find `crypto_market_pipeline`,
+and trigger it. Both tasks should go green within 30 seconds.
 
 ## Query the data
 
@@ -90,6 +93,6 @@ con.close()
 ## Why this project
 
 Airflow is the most requested orchestration tool in data engineering
-job postings. Most junior candidates have never run a real DAG.
-This project demonstrates a working scheduled pipeline with proper
-task dependencies, XCom data passing, and a persistent local warehouse.
+job postings. Most junior candidates have never run a real DAG. This
+project shows a working scheduled pipeline with proper task dependencies,
+XCom data passing, and a persistent local warehouse built at zero cost.
